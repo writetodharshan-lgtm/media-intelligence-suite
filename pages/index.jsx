@@ -33,7 +33,7 @@ async function extractPptxText(file) {
 // ── TOOLS CONFIG ──────────────────────────────────────────────────────────────
 const TOOLKIT_TOOLS = [
   {
-    id: "01", label: "Summary", name: "Executive Summary Generator",
+    id: "01", label: "Summary Drafter", name: "Summary Generator",
     description: "Transform raw media data into a polished executive summary instantly.",
     color: "#8B5CF6", glow: "rgba(139,92,246,0.4)", icon: "◈",
     buttonLabel: "Generate Summary",
@@ -43,7 +43,7 @@ const TOOLKIT_TOOLS = [
     buildPrompt: (v) => "Here are the pre-calculated media metrics. Write an executive summary based on these exact figures:\n\n" + v.data
   },
   {
-    id: "02", label: "Checker", name: "Quality Checker",
+    id: "02", label: "Summary Checker", name: "Summary Checker",
     description: "Verify analyst summaries against raw data for accuracy and tone.",
     color: "#10B981", glow: "rgba(16,185,129,0.4)", icon: "◉",
     buttonLabel: "Run Quality Check",
@@ -55,7 +55,7 @@ const TOOLKIT_TOOLS = [
     buildPrompt: (v) => "(1) Pre-calculated media metrics:\n" + v.datasheet + "\n\n(2) Analyst summary:\n" + v.summary
   },
   {
-    id: "03", label: "Validator", name: "Data Validator",
+    id: "03", label: "PPT Validator", name: "PPT Validator",
     description: "Catch mismatches between your datasheet and PPT before client delivery.",
     color: "#F43F5E", glow: "rgba(244,63,94,0.4)", icon: "◎",
     buttonLabel: "Validate Data",
@@ -67,7 +67,7 @@ const TOOLKIT_TOOLS = [
     buildPrompt: (v) => "(1) Pre-calculated media metrics:\n" + v.datasheet + "\n\n(2) PPT/Summary to validate:\n" + v.ppt
   },
   {
-    id: "04", label: "Extractor", name: "Insight Extractor",
+    id: "04", label: "Key Insights Extractor", name: "Key Insights Extractor",
     description: "Extract themes, messages and patterns from 20-100 articles automatically.",
     color: "#F59E0B", glow: "rgba(245,158,11,0.4)", icon: "◇",
     buttonLabel: "Extract Insights",
