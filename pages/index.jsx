@@ -270,24 +270,49 @@ function ToolkitSection({ t }) {
   const [activeTab, setActiveTab] = useState(0);
   const [values, setValues] = useState({});
   const [loading, setLoading] = useState(false);
+  const [refining, setRefining] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const resultRef = useRef(null);
   const { displayed, done } = useTypewriter(result || "");
   const tool = TOOLKIT_TOOLS[activeTab];
 
-  const switchTab = (i) => { setActiveTab(i); setValues({}); setResult(null); setError(""); };
+  const switchTab = (i) => { setActiveTab(i); setValues({}); setResult(null); setError(""); setRefining(""); };
 
   const run = async () => {
     const missing = tool.inputs.find(inp => !values[inp.key]?.trim());
     if (missing) { setError("Please fill in: " + missing.label); return; }
-    setLoading(true); setResult(null); setError("");
+    setLoading(true); setResult(null); setError(""); setRefining("");
     try {
       const text = await callClaude(tool.system, tool.buildPrompt(values));
       setResult(text);
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
     } catch (e) { setError(e.message); }
     setLoading(false);
+  };
+
+  const refine = async (label, instruction) => {
+    if (!result) return;
+    setRefining(label);
+    try {
+      const text = await callClaude(
+        "You are a senior media intelligence analyst. Rewrite the summary below according to the instruction. Output ONLY the rewritten text — no preamble, no explanation, no markdown, no headers, no bold, no asterisks. Pure prose only.",
+        "INSTRUCTION: " + instruction + "\n\nORIGINAL SUMMARY:\n" + result
+      );
+      setResult(text);
+    } catch (e) { setError(e.message); }
+    setRefining("");
+  };
+
+  // Refine actions per tool
+  const REFINE_ACTIONS = {
+    "01": [
+      { label: "Single Paragraph", icon: "¶", instruction: "Condense this entire summary into a single concise paragraph. Keep all key metrics and figures but remove any repetition." },
+      { label: "Rephrase", icon: "↻", instruction: "Rephrase this summary using completely different wording while preserving all data points, figures, and insights exactly as they are." },
+      { label: "More Formal", icon: "◆", instruction: "Rewrite this summary in a more formal, boardroom-ready executive tone. Keep all data points intact." },
+      { label: "Simplify", icon: "○", instruction: "Simplify the language of this summary so it's easy to understand for a non-expert reader. Keep all numbers and data intact but use plain, straightforward language." },
+      { label: "Shorter", icon: "↓", instruction: "Cut this summary down to roughly half its current length. Keep only the most critical metrics and insights." },
+    ],
   };
 
   return (
@@ -410,6 +435,35 @@ function ToolkitSection({ t }) {
           <div style={{ borderRadius: 12, border: `1px solid ${tool.color}22`, background: t.outputBg, padding: "18px 20px", whiteSpace: "pre-wrap", fontSize: 12, lineHeight: 1.85, color: t.textMid, fontFamily: "monospace" }}>
             {displayed}{!done && <span style={{ color: tool.color }}>|</span>}
           </div>
+
+          {/* Refine action buttons */}
+          {REFINE_ACTIONS[tool.id] && done && (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ fontSize: 9, fontFamily: "monospace", color: t.textFaint, letterSpacing: "0.12em", marginBottom: 8 }}>REFINE OUTPUT</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {REFINE_ACTIONS[tool.id].map(action => (
+                  <button key={action.label} onClick={() => refine(action.label, action.instruction)}
+                    disabled={!!refining}
+                    style={{
+                      background: refining === action.label ? tool.color + "20" : t.bgCard,
+                      border: `1px solid ${refining === action.label ? tool.color + "55" : t.borderCard}`,
+                      borderRadius: 6, padding: "7px 14px", cursor: refining ? "not-allowed" : "pointer",
+                      display: "flex", alignItems: "center", gap: 6, transition: "all 0.2s",
+                      opacity: refining && refining !== action.label ? 0.4 : 1,
+                    }}>
+                    {refining === action.label ? (
+                      <Spinner color={tool.color} />
+                    ) : (
+                      <span style={{ fontSize: 11, color: tool.color }}>{action.icon}</span>
+                    )}
+                    <span style={{ fontSize: 10, fontFamily: "monospace", color: refining === action.label ? tool.color : t.textMid }}>
+                      {refining === action.label ? "Refining..." : action.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
