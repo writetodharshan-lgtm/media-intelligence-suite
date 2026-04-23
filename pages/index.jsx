@@ -271,18 +271,19 @@ function ToolkitSection({ t }) {
   const [values, setValues] = useState({});
   const [loading, setLoading] = useState(false);
   const [refining, setRefining] = useState("");
+  const [customPrompt, setCustomPrompt] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const resultRef = useRef(null);
   const { displayed, done } = useTypewriter(result || "");
   const tool = TOOLKIT_TOOLS[activeTab];
 
-  const switchTab = (i) => { setActiveTab(i); setValues({}); setResult(null); setError(""); setRefining(""); };
+  const switchTab = (i) => { setActiveTab(i); setValues({}); setResult(null); setError(""); setRefining(""); setCustomPrompt(""); };
 
   const run = async () => {
     const missing = tool.inputs.find(inp => !values[inp.key]?.trim());
     if (missing) { setError("Please fill in: " + missing.label); return; }
-    setLoading(true); setResult(null); setError(""); setRefining("");
+    setLoading(true); setResult(null); setError(""); setRefining(""); setCustomPrompt("");
     try {
       const text = await callClaude(tool.system, tool.buildPrompt(values));
       setResult(text);
@@ -304,16 +305,42 @@ function ToolkitSection({ t }) {
     setRefining("");
   };
 
-  // Refine actions per tool
-  const REFINE_ACTIONS = {
-    "01": [
-      { label: "Single Paragraph", icon: "¶", instruction: "Condense this entire summary into a single concise paragraph. Keep all key metrics and figures but remove any repetition." },
-      { label: "Rephrase", icon: "↻", instruction: "Rephrase this summary using completely different wording while preserving all data points, figures, and insights exactly as they are." },
-      { label: "More Formal", icon: "◆", instruction: "Rewrite this summary in a more formal, boardroom-ready executive tone. Keep all data points intact." },
-      { label: "Simplify", icon: "○", instruction: "Simplify the language of this summary so it's easy to understand for a non-expert reader. Keep all numbers and data intact but use plain, straightforward language." },
-      { label: "Shorter", icon: "↓", instruction: "Cut this summary down to roughly half its current length. Keep only the most critical metrics and insights." },
-    ],
-  };
+  // Refine presets
+  const REFINE_PRESETS = [
+    { label: "Single Paragraph", icon: "¶", instruction: "Condense this entire summary into a single concise paragraph. Keep all key metrics and figures but remove any repetition." },
+    { label: "Rephrase", icon: "↻", instruction: "Rephrase this summary using completely different wording while preserving all data points, figures, and insights exactly as they are." },
+    { label: "More Formal", icon: "◆", instruction: "Rewrite this summary in a more formal, boardroom-ready executive tone. Keep all data points intact." },
+    { label: "Simplify", icon: "○", instruction: "Simplify the language of this summary so it's easy to understand for a non-expert reader. Keep all numbers and data intact but use plain, straightforward language." },
+    { label: "Shorter", icon: "↓", instruction: "Cut this summary down to roughly half its current length. Keep only the most critical metrics and insights." },
+  ];
+
+  const TENSE_ACTIONS = [
+    { label: "Past Tense", icon: "⏪", instruction: "Rewrite this summary entirely in past tense. Change ALL verbs to past tense (e.g. 'generates' → 'generated', 'shows' → 'showed'). Keep all data, figures, and insights exactly the same." },
+    { label: "Present Tense", icon: "⏩", instruction: "Rewrite this summary entirely in present tense. Change ALL verbs to present tense (e.g. 'generated' → 'generates', 'showed' → 'shows'). Keep all data, figures, and insights exactly the same." },
+  ];
+
+  const isSummaryTool = tool.id === "01";
+
+  const makeRefineBtn = (action) => (
+    <button key={action.label} onClick={() => refine(action.label, action.instruction)}
+      disabled={!!refining}
+      style={{
+        background: refining === action.label ? tool.color + "20" : t.bgCard,
+        border: `1px solid ${refining === action.label ? tool.color + "55" : t.borderCard}`,
+        borderRadius: 6, padding: "7px 14px", cursor: refining ? "not-allowed" : "pointer",
+        display: "flex", alignItems: "center", gap: 6, transition: "all 0.2s",
+        opacity: refining && refining !== action.label ? 0.4 : 1,
+      }}>
+      {refining === action.label ? (
+        <Spinner color={tool.color} />
+      ) : (
+        <span style={{ fontSize: 11, color: tool.color }}>{action.icon}</span>
+      )}
+      <span style={{ fontSize: 10, fontFamily: "monospace", color: refining === action.label ? tool.color : t.textMid }}>
+        {refining === action.label ? "Refining..." : action.label}
+      </span>
+    </button>
+  );
 
   return (
     <div>
@@ -436,31 +463,43 @@ function ToolkitSection({ t }) {
             {displayed}{!done && <span style={{ color: tool.color }}>|</span>}
           </div>
 
-          {/* Refine action buttons */}
-          {REFINE_ACTIONS[tool.id] && done && (
-            <div style={{ marginTop: 12 }}>
+          {/* ── Refine section (Summary Drafter only) ── */}
+          {isSummaryTool && done && (
+            <div style={{ marginTop: 14 }}>
               <div style={{ fontSize: 9, fontFamily: "monospace", color: t.textFaint, letterSpacing: "0.12em", marginBottom: 8 }}>REFINE OUTPUT</div>
+
+              {/* Custom prompt input */}
+              <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+                <input
+                  type="text"
+                  value={customPrompt}
+                  onChange={e => setCustomPrompt(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && customPrompt.trim() && !refining) refine("Custom", customPrompt.trim()); }}
+                  placeholder="Type any instruction... e.g. 'Tone down the sentiment language'"
+                  style={{ flex: 1, background: t.bgInput, border: `1px solid ${t.borderInput}`, borderRadius: 6, padding: "8px 12px", color: t.textMid, fontSize: 11, fontFamily: "monospace", outline: "none" }}
+                />
+                <button
+                  onClick={() => { if (customPrompt.trim()) refine("Custom", customPrompt.trim()); }}
+                  disabled={!customPrompt.trim() || !!refining}
+                  style={{
+                    background: !customPrompt.trim() || refining ? t.toggleBg : tool.color,
+                    color: !customPrompt.trim() || refining ? t.textDim : "#fff",
+                    border: "none", borderRadius: 6, padding: "8px 16px", fontSize: 10, fontFamily: "monospace",
+                    cursor: !customPrompt.trim() || refining ? "not-allowed" : "pointer", whiteSpace: "nowrap",
+                    display: "flex", alignItems: "center", gap: 6,
+                  }}>
+                  {refining === "Custom" ? <><Spinner color="#fff" /> Refining...</> : "Refine"}
+                </button>
+              </div>
+
+              {/* Tense toggles */}
+              <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+                {TENSE_ACTIONS.map(makeRefineBtn)}
+              </div>
+
+              {/* Preset refine buttons */}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {REFINE_ACTIONS[tool.id].map(action => (
-                  <button key={action.label} onClick={() => refine(action.label, action.instruction)}
-                    disabled={!!refining}
-                    style={{
-                      background: refining === action.label ? tool.color + "20" : t.bgCard,
-                      border: `1px solid ${refining === action.label ? tool.color + "55" : t.borderCard}`,
-                      borderRadius: 6, padding: "7px 14px", cursor: refining ? "not-allowed" : "pointer",
-                      display: "flex", alignItems: "center", gap: 6, transition: "all 0.2s",
-                      opacity: refining && refining !== action.label ? 0.4 : 1,
-                    }}>
-                    {refining === action.label ? (
-                      <Spinner color={tool.color} />
-                    ) : (
-                      <span style={{ fontSize: 11, color: tool.color }}>{action.icon}</span>
-                    )}
-                    <span style={{ fontSize: 10, fontFamily: "monospace", color: refining === action.label ? tool.color : t.textMid }}>
-                      {refining === action.label ? "Refining..." : action.label}
-                    </span>
-                  </button>
-                ))}
+                {REFINE_PRESETS.map(makeRefineBtn)}
               </div>
             </div>
           )}
