@@ -78,43 +78,6 @@ const TOOLKIT_TOOLS = [
   }
 ];
 
-const BOOLEAN_SYSTEM = `You are a boolean search string builder for media monitoring tools like Meltwater and Cision.
-
-INPUT: The user will provide:
-1. A list of keywords (one per line)
-2. Optional company names
-
-YOUR JOB: For each keyword, generate one or more boolean search strings that would effectively capture relevant media coverage. Use your judgment to create comprehensive boolean strings.
-
-RULES:
-- Multi-word phrases MUST be in quotes: "Sims metal"
-- Use AND to combine terms that must appear together
-- Use OR to group synonyms, abbreviations, or related terms
-- Use parentheses for grouping
-- If a keyword has common abbreviations or alternate names, include them with OR
-- If a keyword is generic (like "fire" or "recall"), combine it with company names using AND to narrow results
-- If company names are provided, use them. If not, just build strings from the keywords alone.
-- Think about what variations a journalist might use when writing about this topic
-
-FORMAT - return exactly this structure:
-
-BOOLEAN STRINGS
-
-1. [keyword as label]
-[boolean string]
-
-2. [next keyword]
-[boolean string]
-
-Example output:
-1. fire Millington Sims
-("fire" AND "Millington" AND "Sims")
-
-2. SLS sims lifecycle services
-("SLS" OR "sims lifecycle services" OR "sims") AND ("fire" OR "Millington")
-
-CRITICAL: Each boolean string must be a valid, ready-to-paste search query. No explanations, just the label and the string.`;
-
 // ── THEME ─────────────────────────────────────────────────────────────────────
 function getTheme(dark) {
   if (dark) return {
@@ -190,81 +153,6 @@ function CopyBtn({ text, color, t }) {
   );
 }
 
-// ── BOOLEAN ───────────────────────────────────────────────────────────────────
-function BooleanSection({ t }) {
-  const [keywords, setKeywords] = useState("");
-  const [companies, setCompanies] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
-  const { displayed, done } = useTypewriter(result || "");
-
-  const run = async () => {
-    if (!keywords.trim()) { setError("Please enter at least one keyword."); return; }
-    setLoading(true); setResult(null); setError("");
-    try {
-      let prompt = "Keywords:\n" + keywords;
-      if (companies.trim()) prompt += "\n\nCompany names: " + companies.trim();
-      const text = await callClaude(BOOLEAN_SYSTEM, prompt);
-      setResult(text);
-    } catch (e) { setError(e.message); }
-    setLoading(false);
-  };
-
-  return (
-    <div>
-      <div style={{ padding: "14px 16px", background: t.infoBoxBg, border: `1px solid ${t.infoBoxBorder}`, borderRadius: 8, marginBottom: 20, fontSize: 14, color: t.infoText, lineHeight: 1.85, fontFamily: "monospace" }}>
-        <div style={{ color: t.gold, fontWeight: 700, marginBottom: 6 }}>How to use:</div>
-        <div>• Enter one keyword or phrase per line</div>
-        <div>• Claude will generate boolean strings with AND/OR combinations</div>
-        <div>• Abbreviations and variations are included automatically</div>
-        <div>• Add company names to scope generic terms</div>
-      </div>
-
-      <div style={{ marginBottom: 14 }}>
-        <label style={{ fontSize: 12, fontFamily: "monospace", color: t.gold, letterSpacing: "0.12em", display: "block", marginBottom: 6 }}>KEYWORDS</label>
-        <textarea rows={8} value={keywords} onChange={e => setKeywords(e.target.value)}
-          placeholder={"Enter one keyword per line...\n\nExample:\nfire Millington Sims\nSLS sims lifecycle services\nrecycling plant explosion"}
-          style={{ width: "100%", background: t.bgInput, border: `1px solid ${t.borderInput}`, borderRadius: 8, padding: "12px 14px", color: t.gold, fontSize: 15, lineHeight: 1.8, fontFamily: "monospace", resize: "vertical" }} />
-      </div>
-
-      <div style={{ marginBottom: 20 }}>
-        <label style={{ fontSize: 12, fontFamily: "monospace", color: t.textDim, letterSpacing: "0.12em", display: "block", marginBottom: 6 }}>
-          COMPANY NAMES <span style={{ color: t.textFaint, fontWeight: 400 }}>(optional — used to scope generic keywords)</span>
-        </label>
-        <input type="text" value={companies} onChange={e => setCompanies(e.target.value)}
-          placeholder="Sims Metal, SLS, Sims Lifecycle Services..."
-          style={{ width: "100%", background: t.bgInput, border: `1px solid ${t.borderInput}`, borderRadius: 8, padding: "12px 14px", color: t.textMid, fontSize: 15, fontFamily: "monospace", outline: "none" }} />
-      </div>
-
-      {error && <div style={{ padding: "10px 14px", borderRadius: 6, background: "rgba(244,63,94,0.06)", border: "1px solid rgba(244,63,94,0.2)", color: "#F87171", fontSize: 13, fontFamily: "monospace", marginBottom: 12 }}>⚠ {error}</div>}
-
-      <button onClick={run} disabled={loading} style={{
-        width: "100%", padding: "15px", borderRadius: 8, border: "none",
-        background: loading ? t.toggleBg : `linear-gradient(135deg, ${t.gold}, ${t.goldMid})`,
-        color: loading ? t.textDim : (t.dark ? "#0a0a0f" : "#fff"),
-        fontWeight: 700, fontSize: 15, cursor: loading ? "not-allowed" : "pointer",
-        display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 24,
-        boxShadow: loading ? "none" : "0 6px 22px rgba(200,169,110,0.25)"
-      }}>
-        {loading ? <><Spinner color={t.gold} /><span style={{ color: t.gold }}>Generating strings...</span></> : "Generate Strings"}
-      </button>
-
-      {result && (
-        <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <span style={{ fontSize: 11, fontFamily: "monospace", color: t.textDim, letterSpacing: "0.15em" }}>OUTPUT</span>
-            <CopyBtn text={result} color={t.gold} t={t} />
-          </div>
-          <div style={{ borderRadius: 10, border: `1px solid ${t.gold}22`, background: t.outputBg, padding: "18px 20px", whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.9, color: t.textMid, fontFamily: "monospace" }}>
-            {displayed}{!done && <span style={{ color: t.gold }}>|</span>}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── TOOLKIT ───────────────────────────────────────────────────────────────────
 function ToolkitSection({ t }) {
   const [activeTab, setActiveTab] = useState(0);
@@ -305,7 +193,6 @@ function ToolkitSection({ t }) {
     setRefining("");
   };
 
-  // Refine presets
   const REFINE_PRESETS = [
     { label: "Single Paragraph", icon: "¶", instruction: "Condense this entire summary into a single concise paragraph. Keep all key metrics and figures but remove any repetition." },
     { label: "Rephrase", icon: "↻", instruction: "Rephrase this summary using completely different wording while preserving all data points, figures, and insights exactly as they are." },
@@ -463,12 +350,10 @@ function ToolkitSection({ t }) {
             {displayed}{!done && <span style={{ color: tool.color }}>|</span>}
           </div>
 
-          {/* ── Refine section (Summary Drafter only) ── */}
           {isSummaryTool && done && (
             <div style={{ marginTop: 14 }}>
               <div style={{ fontSize: 9, fontFamily: "monospace", color: t.textFaint, letterSpacing: "0.12em", marginBottom: 8 }}>REFINE OUTPUT</div>
 
-              {/* Custom prompt input */}
               <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
                 <input
                   type="text"
@@ -492,12 +377,10 @@ function ToolkitSection({ t }) {
                 </button>
               </div>
 
-              {/* Tense toggles */}
               <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
                 {TENSE_ACTIONS.map(makeRefineBtn)}
               </div>
 
-              {/* Preset refine buttons */}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {REFINE_PRESETS.map(makeRefineBtn)}
               </div>
@@ -509,23 +392,10 @@ function ToolkitSection({ t }) {
   );
 }
 
-// ── NAV & HERO ────────────────────────────────────────────────────────────────
-const NAV = [
-  { id: "boolean", label: "Boolean Generator", icon: "⊕", sub: "Search strings", accent: "#c8a96e" },
-  { id: "toolkit", label: "Toolkit",           icon: "◈", sub: "4 AI tools",      accent: "#8B5CF6" },
-];
-
-const HERO = {
-  boolean: { eyebrow: "Media Intelligence Suite", title: "Boolean String Generator", sub: "Enter keywords and Claude will generate comprehensive boolean search strings for media monitoring", italic: true },
-  toolkit: { eyebrow: "4 Specialist Tools", title: null, sub: "Generate summaries, check quality, validate data, and extract insights from your media coverage.", italic: false },
-};
-
 // ── APP ───────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [section, setSection] = useState("boolean");
   const [dark, setDark] = useState(true);
   const t = getTheme(dark);
-  const hero = HERO[section];
 
   return (
     <div style={{ background: t.bg, minHeight: "100vh", color: t.text, fontFamily: "'Syne', sans-serif", transition: "background 0.3s, color 0.3s" }}>
@@ -545,6 +415,7 @@ export default function App() {
         ::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.2); border-radius: 3px; }
       `}</style>
 
+      {/* ── NAV ── */}
       <div style={{ position: "sticky", top: 0, zIndex: 50, background: t.bgNav, backdropFilter: "blur(12px)", borderBottom: `1px solid ${t.border}`, padding: "0 20px" }}>
         <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", alignItems: "center", gap: 10, height: 52 }}>
           <div style={{ width: 28, height: 28, borderRadius: 7, background: "linear-gradient(135deg, #8B5CF6, #6366F1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "#fff", flexShrink: 0 }}>M</div>
@@ -558,43 +429,18 @@ export default function App() {
         </div>
       </div>
 
-      <div style={{ background: t.bgSub, borderBottom: `1px solid ${t.border}` }}>
-        <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", padding: "0 20px" }}>
-          {NAV.map(n => (
-            <button key={n.id} onClick={() => setSection(n.id)} style={{
-              background: "none", border: "none",
-              borderBottom: `2px solid ${section === n.id ? n.accent : "transparent"}`,
-              padding: "13px 18px 11px", cursor: "pointer", transition: "all 0.2s",
-              display: "flex", alignItems: "center", gap: 7
-            }}>
-              <span style={{ fontSize: 13, color: section === n.id ? n.accent : t.textFaint }}>{n.icon}</span>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: section === n.id ? t.heroTitle : t.textDim, letterSpacing: "-0.01em" }}>{n.label}</div>
-                <div style={{ fontSize: 9, color: section === n.id ? t.textDim : t.textGhost, fontFamily: "monospace" }}>{n.sub}</div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "36px 20px 64px" }}>
-        <div key={section + "-hero"} style={{ marginBottom: 30, animation: "slideUp 0.25s ease" }}>
-          <div style={{ fontSize: 9, fontFamily: "monospace", color: section === "toolkit" ? t.textDim : t.gold, letterSpacing: "0.15em", marginBottom: 10, textTransform: "uppercase" }}>{hero.eyebrow}</div>
-          {section === "toolkit" ? (
-            <h1 style={{ fontSize: "clamp(26px, 4.5vw, 38px)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: 10 }}>
-              <span style={{ color: t.heroTitle }}>Media Intelligence</span><br />
-              <span style={{ background: "linear-gradient(90deg, #8B5CF6, #6366F1, #10B981)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>at your fingertips</span>
-            </h1>
-          ) : (
-            <h1 style={{ fontSize: "clamp(26px, 4.5vw, 38px)", fontWeight: 400, lineHeight: 1.05, letterSpacing: "-1px", marginBottom: 8, color: t.heroTitle }}>{hero.title}</h1>
-          )}
-          <p style={{ fontSize: 13, color: t.textDim, lineHeight: 1.65, maxWidth: 460, fontStyle: hero.italic ? "italic" : "normal" }}>{hero.sub}</p>
+      {/* ── MAIN ── */}
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "36px 20px 64px", animation: "slideUp 0.3s ease" }}>
+        <div style={{ marginBottom: 30 }}>
+          <div style={{ fontSize: 9, fontFamily: "monospace", color: t.textDim, letterSpacing: "0.15em", marginBottom: 10, textTransform: "uppercase" }}>4 Specialist Tools</div>
+          <h1 style={{ fontSize: "clamp(26px, 4.5vw, 38px)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: 10 }}>
+            <span style={{ color: t.heroTitle }}>Media Intelligence</span><br />
+            <span style={{ background: "linear-gradient(90deg, #8B5CF6, #6366F1, #10B981)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>at your fingertips</span>
+          </h1>
+          <p style={{ fontSize: 13, color: t.textDim, lineHeight: 1.65, maxWidth: 460 }}>Generate summaries, check quality, validate data, and extract insights from your media coverage.</p>
         </div>
 
-        <div key={section + "-content"} style={{ animation: "slideUp 0.3s ease" }}>
-          {section === "boolean" && <BooleanSection t={t} />}
-          {section === "toolkit" && <ToolkitSection  t={t} />}
-        </div>
+        <ToolkitSection t={t} />
       </div>
 
       <div style={{ textAlign: "center", padding: "20px", fontSize: 9, color: t.textFoot, fontFamily: "monospace" }}>
