@@ -1,13 +1,14 @@
 export const config = { maxDuration: 60 };
 
 const MODELS = [
-  "claude-sonnet-4-20250514",
-  "claude-haiku-4-5-20251001",
+  "claude-sonnet-4-6",            // was "claude-sonnet-4-20250514" — that snapshot is
+                                  // retired and returns a 404 not_found_error.
+                                  // Newest Sonnet alternative: "claude-sonnet-5"
+  "claude-haiku-4-5-20251001",   // still valid — used as the fallback
 ];
 
 async function callWithFallback(client, system, prompt) {
   let lastError;
-
   for (const model of MODELS) {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
@@ -21,6 +22,13 @@ async function callWithFallback(client, system, prompt) {
         lastError = err;
         const isOverloaded = err?.status === 529 || err?.message?.includes("Overloaded");
         const isRateLimit = err?.status === 429;
+
+        // Optional robustness: if THIS model is unavailable (e.g. a future
+        // retirement), skip straight to the next model in MODELS instead of
+        // failing hard. A 404 is not worth retrying on the same model.
+        const isModelMissing = err?.status === 404;
+        if (isModelMissing) break; // move on to the next model in MODELS
+
         if (isOverloaded || isRateLimit) {
           // Wait briefly then try again or move to next model
           await new Promise(r => setTimeout(r, 1500));
@@ -37,23 +45,18 @@ export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
-
   const { system, prompt } = req.body;
   if (!system || !prompt) {
     return res.status(400).json({ error: "system and prompt are required" });
   }
-
   try {
     const Anthropic = (await import("@anthropic-ai/sdk")).default;
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
     const message = await callWithFallback(client, system, prompt);
-
     const text = message.content
       .filter((b) => b.type === "text")
       .map((b) => b.text)
       .join("\n");
-
     return res.status(200).json({ text });
   } catch (err) {
     console.error(err);
