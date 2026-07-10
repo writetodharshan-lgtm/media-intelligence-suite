@@ -30,11 +30,11 @@ async function extractPptxText(file) {
   return texts.join("\n\n");
 }
 
-// ── TOOLS CONFIG ──────────────────────────────────────────────────────────────
+// ── TOOLS CONFIG (logic preserved verbatim) ───────────────────────────────────
 const TOOLKIT_TOOLS = [
   {
     id: "01", label: "Summary Drafter", name: "Summary Generator",
-    description: "Transform raw media data into a polished executive summary instantly.",
+    description: "Turn raw coverage metrics into a board-ready executive summary.",
     color: "#8B5CF6", glow: "rgba(139,92,246,0.4)", icon: "◈",
     buttonLabel: "Generate Summary",
     inputs: [{ key: "data", label: "Paste your coverage metrics below", rows: 12,
@@ -44,7 +44,7 @@ const TOOLKIT_TOOLS = [
   },
   {
     id: "02", label: "Summary Checker", name: "Summary Checker",
-    description: "Verify analyst summaries against raw data for accuracy and tone.",
+    description: "Cross-check a written summary against the underlying numbers.",
     color: "#10B981", glow: "rgba(16,185,129,0.4)", icon: "◉",
     buttonLabel: "Run Quality Check",
     inputs: [
@@ -56,7 +56,7 @@ const TOOLKIT_TOOLS = [
   },
   {
     id: "03", label: "PPT Validator", name: "PPT Validator",
-    description: "Catch mismatches between your datasheet and PPT before client delivery.",
+    description: "Catch mismatches between your datasheet and deck before delivery.",
     color: "#F43F5E", glow: "rgba(244,63,94,0.4)", icon: "◎",
     buttonLabel: "Validate Data",
     inputs: [
@@ -68,7 +68,7 @@ const TOOLKIT_TOOLS = [
   },
   {
     id: "04", label: "Key Insights Extractor", name: "Key Insights Extractor",
-    description: "Extract themes, messages and patterns from 20-100 articles automatically.",
+    description: "Surface themes, messages and patterns across 20–100 articles.",
     color: "#F59E0B", glow: "rgba(245,158,11,0.4)", icon: "◇",
     buttonLabel: "Extract Insights",
     inputs: [{ key: "articles", label: "Article Batch", rows: 14,
@@ -78,39 +78,42 @@ const TOOLKIT_TOOLS = [
   }
 ];
 
+// ── TOOL ICONS (line SVGs, colored via currentColor) ──────────────────────────
+function ToolIcon({ id, size = 18 }) {
+  const p = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round" };
+  if (id === "01") return (<svg {...p}><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M5 3h9l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" /><path d="M8 12h8M8 16h6" /></svg>);
+  if (id === "02") return (<svg {...p}><path d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6l7-3z" /><path d="M9 12l2 2 4-4" /></svg>);
+  if (id === "03") return (<svg {...p}><circle cx="11" cy="11" r="6" /><path d="M20 20l-3.4-3.4" /><path d="M8.6 11l1.7 1.7 3.1-3.3" /></svg>);
+  return (<svg {...p}><path d="M12 3l1.7 4.6L18.4 9.3 13.7 11 12 15.6 10.3 11 5.6 9.3 10.3 7.6 12 3z" /><path d="M18 14.2l.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6.6-1.7z" /></svg>);
+}
+
 // ── THEME ─────────────────────────────────────────────────────────────────────
 function getTheme(dark) {
   if (dark) return {
     dark: true,
-    bg: "#060810", bgNav: "rgba(6,8,16,0.97)", bgSub: "#080C14",
-    bgCard: "#13131a", bgInput: "#0A0F1A",
-    border: "rgba(255,255,255,0.05)", borderCard: "#1c1c28", borderInput: "#111827",
-    text: "#F9FAFB", textMid: "#94A3B8", textDim: "#64748B", textFaint: "#334155",
-    textGhost: "#1E3A5F", textFoot: "#1a2030",
-    heroTitle: "#F1F5F9",
-    gold: "#c8a96e", goldDim: "#8a8070", goldMid: "#a09888",
-    outputBg: "#080B12",
-    toggleBg: "#1a2030", infoBoxBg: "rgba(200,169,110,0.06)",
-    infoBoxBorder: "rgba(200,169,110,0.18)", infoText: "#a09888",
-    errBg: "#1a0f0f", errBorder: "#4a2020",
+    bg: "#0B0D12", navBg: "rgba(11,13,18,0.72)",
+    surface: "#141824", surfaceAlt: "#0F131C", surfaceInput: "#0E121A",
+    border: "rgba(255,255,255,0.08)", borderStrong: "rgba(255,255,255,0.14)",
+    text: "#EDEFF3", textMid: "#9AA3B2", textDim: "#6B7484", textFaint: "#3C4353",
+    cardShadow: "0 10px 40px -24px rgba(0,0,0,0.8)",
+    errText: "#FCA5A5", errBg: "rgba(244,63,94,0.08)", errBorder: "rgba(244,63,94,0.28)",
+    glowA: "rgba(139,92,246,0.16)", glowB: "rgba(16,185,129,0.10)",
+    heroEyebrow: "#9AA3B2",
   };
   return {
     dark: false,
-    bg: "#F8F9FB", bgNav: "rgba(255,255,255,0.97)", bgSub: "#EEF0F5",
-    bgCard: "#FFFFFF", bgInput: "#F4F5F8",
-    border: "rgba(0,0,0,0.07)", borderCard: "#E2E8F0", borderInput: "#DDE1EA",
-    text: "#0F172A", textMid: "#334155", textDim: "#64748B", textFaint: "#94A3B8",
-    textGhost: "#CBD5E1", textFoot: "#CBD5E1",
-    heroTitle: "#0F172A",
-    gold: "#96710A", goldDim: "#B08030", goldMid: "#7A5A10",
-    outputBg: "#F0F4F8",
-    toggleBg: "#E2E8F0", infoBoxBg: "rgba(150,113,10,0.05)",
-    infoBoxBorder: "rgba(150,113,10,0.2)", infoText: "#6A4F10",
-    errBg: "#FEF2F2", errBorder: "#FCA5A5",
+    bg: "#F2F4F8", navBg: "rgba(242,244,248,0.75)",
+    surface: "#FFFFFF", surfaceAlt: "#F7F9FC", surfaceInput: "#F5F7FA",
+    border: "rgba(15,23,42,0.09)", borderStrong: "rgba(15,23,42,0.16)",
+    text: "#0F1420", textMid: "#49525F", textDim: "#6B7482", textFaint: "#AAB1BD",
+    cardShadow: "0 12px 34px -22px rgba(15,23,42,0.32)",
+    errText: "#B91C3B", errBg: "rgba(244,63,94,0.06)", errBorder: "rgba(244,63,94,0.30)",
+    glowA: "rgba(139,92,246,0.10)", glowB: "rgba(16,185,129,0.07)",
+    heroEyebrow: "#6B7482",
   };
 }
 
-// ── UTILS ─────────────────────────────────────────────────────────────────────
+// ── UTILS (logic preserved verbatim) ──────────────────────────────────────────
 async function callClaude(system, userPrompt) {
   const res = await fetch("/api/claude", {
     method: "POST",
@@ -139,16 +142,22 @@ function useTypewriter(text, speed = 12) {
   return { displayed, done };
 }
 
-function Spinner({ color = "#fff" }) {
-  return <div style={{ width: 13, height: 13, border: "2px solid rgba(128,128,128,0.2)", borderTop: `2px solid ${color}`, borderRadius: "50%", animation: "spin 0.7s linear infinite", flexShrink: 0 }} />;
+function Spinner({ color = "#fff", size = 14 }) {
+  return <div style={{ width: size, height: size, border: "2px solid rgba(128,128,128,0.25)", borderTop: `2px solid ${color}`, borderRadius: "50%", animation: "spin 0.7s linear infinite", flexShrink: 0 }} />;
 }
 
 function CopyBtn({ text, color, t }) {
   const [copied, setCopied] = useState(false);
   const copy = () => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); };
   return (
-    <button onClick={copy} style={{ background: copied ? color : "transparent", border: `1px solid ${copied ? color : t.borderCard}`, color: copied ? (t.dark ? "#0a0a0f" : "#fff") : t.textMid, borderRadius: 6, padding: "4px 12px", fontSize: 10, cursor: "pointer", fontFamily: "monospace" }}>
-      {copied ? "✓ Copied" : "Copy"}
+    <button onClick={copy} className="mis-chip" style={{
+      background: copied ? color : "transparent",
+      border: `1px solid ${copied ? color : t.border}`,
+      color: copied ? "#fff" : t.textMid,
+      borderRadius: 8, padding: "5px 13px", fontSize: 11, cursor: "pointer",
+      fontFamily: "var(--mono)", letterSpacing: "0.02em", display: "inline-flex", alignItems: "center", gap: 6,
+    }}>
+      {copied ? "Copied" : "Copy"}
     </button>
   );
 }
@@ -210,184 +219,236 @@ function ToolkitSection({ t }) {
 
   const makeRefineBtn = (action) => (
     <button key={action.label} onClick={() => refine(action.label, action.instruction)}
-      disabled={!!refining}
+      disabled={!!refining} className="mis-chip"
       style={{
-        background: refining === action.label ? tool.color + "20" : t.bgCard,
-        border: `1px solid ${refining === action.label ? tool.color + "55" : t.borderCard}`,
-        borderRadius: 6, padding: "7px 14px", cursor: refining ? "not-allowed" : "pointer",
-        display: "flex", alignItems: "center", gap: 6, transition: "all 0.2s",
+        background: refining === action.label ? tool.color + "1A" : t.surface,
+        border: `1px solid ${refining === action.label ? tool.color : t.border}`,
+        borderRadius: 999, padding: "7px 14px", cursor: refining ? "not-allowed" : "pointer",
+        display: "inline-flex", alignItems: "center", gap: 7,
         opacity: refining && refining !== action.label ? 0.4 : 1,
+        color: refining === action.label ? tool.color : t.textMid,
       }}>
-      {refining === action.label ? (
-        <Spinner color={tool.color} />
-      ) : (
-        <span style={{ fontSize: 11, color: tool.color }}>{action.icon}</span>
-      )}
-      <span style={{ fontSize: 10, fontFamily: "monospace", color: refining === action.label ? tool.color : t.textMid }}>
-        {refining === action.label ? "Refining..." : action.label}
+      {refining === action.label
+        ? <Spinner color={tool.color} size={12} />
+        : <span style={{ fontSize: 11, color: tool.color, lineHeight: 1 }}>{action.icon}</span>}
+      <span style={{ fontSize: 11.5, fontFamily: "var(--mono)", letterSpacing: "0.01em" }}>
+        {refining === action.label ? "Refining…" : action.label}
       </span>
     </button>
   );
 
+  const inputStyle = {
+    width: "100%", background: t.surfaceInput, border: `1px solid ${t.border}`,
+    borderRadius: 12, padding: "13px 15px", color: t.text, fontSize: 13,
+    lineHeight: 1.7, fontFamily: "var(--mono)", resize: "vertical",
+  };
+  const labelStyle = { fontSize: 10, fontFamily: "var(--mono)", color: tool.color, letterSpacing: "0.14em", textTransform: "uppercase", display: "block", marginBottom: 8, fontWeight: 500 };
+
   return (
-    <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 24 }}>
-        {TOOLKIT_TOOLS.map((tl, i) => (
-          <button key={tl.id} onClick={() => switchTab(i)} style={{
-            background: activeTab === i ? tl.color + "12" : t.bgCard,
-            border: `1px solid ${activeTab === i ? tl.color + "55" : t.borderCard}`,
-            borderRadius: 12, padding: "14px 16px", cursor: "pointer", textAlign: "left", transition: "all 0.2s"
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-              <span style={{ fontSize: 15, color: activeTab === i ? tl.color : t.textFaint }}>{tl.icon}</span>
-              <span style={{ fontSize: 9, fontFamily: "monospace", color: activeTab === i ? tl.color : t.textFaint, letterSpacing: "0.12em" }}>{tl.id}</span>
-            </div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: activeTab === i ? t.heroTitle : t.textDim, marginBottom: 3 }}>{tl.label}</div>
-            <div style={{ fontSize: 10, color: activeTab === i ? t.textMid : t.textFaint, lineHeight: 1.5 }}>{tl.description}</div>
-          </button>
-        ))}
+    <div style={{ "--accent": tool.color }}>
+      {/* Tool selector */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 12, marginBottom: 34 }}>
+        {TOOLKIT_TOOLS.map((tl, i) => {
+          const on = activeTab === i;
+          return (
+            <button key={tl.id} onClick={() => switchTab(i)} className="mis-card"
+              aria-pressed={on}
+              style={{
+                "--accent": tl.color,
+                position: "relative", overflow: "hidden", textAlign: "left", cursor: "pointer",
+                background: on ? tl.color + "12" : t.surface,
+                border: `1px solid ${on ? tl.color : t.border}`,
+                borderRadius: 16, padding: "16px 17px",
+                boxShadow: on ? `0 14px 40px -22px ${tl.color}` : t.cardShadow,
+              }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <span style={{
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  width: 34, height: 34, borderRadius: 10,
+                  background: on ? tl.color + "22" : (t.dark ? "rgba(255,255,255,0.04)" : "rgba(15,23,42,0.04)"),
+                  color: on ? tl.color : t.textDim, transition: "all .18s ease",
+                }}>
+                  <ToolIcon id={tl.id} size={18} />
+                </span>
+                <span style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                  {on && <span className="mis-pulse" style={{ width: 6, height: 6, borderRadius: "50%", background: tl.color }} />}
+                  <span style={{ fontSize: 10, fontFamily: "var(--mono)", color: on ? tl.color : t.textFaint, letterSpacing: "0.14em" }}>{tl.id}</span>
+                </span>
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: on ? t.text : t.textMid, marginBottom: 4, letterSpacing: "-0.01em" }}>{tl.name}</div>
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 10 }}>
+                <div style={{ fontSize: 12, color: on ? t.textMid : t.textDim, lineHeight: 1.55 }}>{tl.description}</div>
+                <span className="mis-arrow" style={{ color: tl.color, flexShrink: 0, marginBottom: 1 }} aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                </span>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, padding: "12px 16px", borderRadius: 10, background: tool.color + "0C", border: `1px solid ${tool.color}25` }}>
-        <div style={{ width: 32, height: 32, borderRadius: 8, background: tool.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>{tool.icon}</div>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: t.heroTitle, marginBottom: 1 }}>{tool.name}</div>
-          <div style={{ fontSize: 11, color: t.textDim }}>{tool.description}</div>
-        </div>
-      </div>
-
-      {tool.inputs.map((inp) => {
-        if ((tool.id === "02" || tool.id === "03") && inp.key === "datasheet") return (
-          <div key={inp.key} style={{ marginBottom: 12 }}>
-            <label style={{ fontSize: 9, fontFamily: "monospace", color: tool.color, letterSpacing: "0.12em", display: "block", marginBottom: 6 }}>{inp.label.toUpperCase()}</label>
-            <label style={{ display: "flex", alignItems: "center", gap: 10, background: t.bgInput, border: `1px solid ${t.borderInput}`, borderRadius: 8, padding: "14px 16px", cursor: "pointer", marginBottom: 6 }}>
-              <span style={{ fontSize: 20 }}>📎</span>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: tool.color }}>Upload CSV Datasheet</div>
-                <div style={{ fontSize: 11, color: t.textDim, marginTop: 2 }}>{values[inp.key] ? "✓ File loaded (" + values[inp.key].length.toLocaleString() + " chars)" : "Click to upload a .csv file"}</div>
-              </div>
-              <input type="file" accept=".csv,.txt" style={{ display: "none" }} onChange={e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => setValues(v => ({ ...v, [inp.key]: ev.target.result })); r.readAsText(f); }} />
-            </label>
-            <textarea rows={inp.rows} value={values[inp.key] || ""} placeholder={inp.placeholder + "\n\n(Or paste data here instead of uploading)"}
-              onChange={e => setValues(v => ({ ...v, [inp.key]: e.target.value }))}
-              style={{ width: "100%", background: t.bgInput, border: `1px solid ${t.borderInput}`, borderRadius: 8, padding: "11px 13px", color: t.textMid, fontSize: 12, lineHeight: 1.7, fontFamily: "monospace", resize: "vertical" }} />
-          </div>
-        );
-
-        if (tool.id === "03" && inp.key === "ppt") return (
-          <div key={inp.key} style={{ marginBottom: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <label style={{ fontSize: 9, fontFamily: "monospace", color: tool.color, letterSpacing: "0.12em" }}>{inp.label.toUpperCase()}</label>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, background: tool.color + "18", border: `1px solid ${tool.color}55`, borderRadius: 6, padding: "5px 12px", cursor: "pointer", fontSize: 11, color: tool.color, fontFamily: "monospace" }}>
-                Upload PPT/File
-                <input type="file" accept=".ppt,.pptx,.txt,.csv,.md" style={{ display: "none" }}
-                  onChange={async e => {
-                    const f = e.target.files[0]; if (!f) return;
-                    if (f.name.endsWith(".pptx") || f.name.endsWith(".ppt")) {
-                      try { const text = await extractPptxText(f); setValues(v => ({ ...v, [inp.key]: text })); }
-                      catch (err) { setError("Could not read PPTX: " + err.message); }
-                    } else {
-                      const r = new FileReader(); r.onload = ev => setValues(v => ({ ...v, [inp.key]: ev.target.result })); r.readAsText(f);
-                    }
-                  }} />
-              </label>
+      {/* Working panel */}
+      <div style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 20, boxShadow: t.cardShadow, overflow: "hidden" }}>
+        <div className="mis-signal" style={{ "--accent": tool.color }} />
+        <div style={{ padding: "22px 22px 24px" }}>
+          {/* Tool header */}
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 22 }}>
+            <div style={{
+              width: 42, height: 42, borderRadius: 12, flexShrink: 0, color: "#fff",
+              background: `linear-gradient(140deg, ${tool.color}, ${tool.color}CC)`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: `0 8px 22px -10px ${tool.color}`,
+            }}>
+              <ToolIcon id={tool.id} size={21} />
             </div>
-            {values[inp.key] && <div style={{ fontSize: 10, color: tool.color, fontFamily: "monospace", marginBottom: 6, padding: "4px 10px", background: tool.color + "12", borderRadius: 4, display: "inline-block" }}>File loaded ({values[inp.key].length.toLocaleString()} chars)</div>}
-            <textarea rows={inp.rows} value={values[inp.key] || ""} placeholder={inp.placeholder}
-              onChange={e => setValues(v => ({ ...v, [inp.key]: e.target.value }))}
-              style={{ width: "100%", background: t.bgInput, border: `1px solid ${t.borderInput}`, borderRadius: 8, padding: "11px 13px", color: t.textMid, fontSize: 12, lineHeight: 1.7, fontFamily: "monospace", resize: "vertical" }} />
-          </div>
-        );
-
-        if (tool.id === "04" && inp.key === "articles") return (
-          <div key={inp.key} style={{ marginBottom: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-              <label style={{ fontSize: 9, fontFamily: "monospace", color: tool.color, letterSpacing: "0.12em" }}>{inp.label.toUpperCase()}</label>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, background: tool.color + "18", border: `1px solid ${tool.color}55`, borderRadius: 6, padding: "5px 12px", cursor: "pointer", fontSize: 11, color: tool.color, fontFamily: "monospace" }}>
-                Upload CSV
-                <input type="file" accept=".csv,.txt" style={{ display: "none" }} onChange={e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => setValues(v => ({ ...v, [inp.key]: ev.target.result })); r.readAsText(f); }} />
-              </label>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: t.text, letterSpacing: "-0.01em" }}>{tool.name}</div>
+              <div style={{ fontSize: 12.5, color: t.textDim, marginTop: 2 }}>{tool.description}</div>
             </div>
-            <textarea rows={inp.rows} value={values[inp.key] || ""} placeholder={inp.placeholder}
-              onChange={e => setValues(v => ({ ...v, [inp.key]: e.target.value }))}
-              style={{ width: "100%", background: t.bgInput, border: `1px solid ${t.borderInput}`, borderRadius: 8, padding: "11px 13px", color: t.textMid, fontSize: 12, lineHeight: 1.7, fontFamily: "monospace", resize: "vertical" }} />
-          </div>
-        );
-
-        return (
-          <div key={inp.key} style={{ marginBottom: 12 }}>
-            <label style={{ fontSize: 9, fontFamily: "monospace", color: tool.color, letterSpacing: "0.12em", display: "block", marginBottom: 6 }}>{inp.label.toUpperCase()}</label>
-            <textarea rows={inp.rows} value={values[inp.key] || ""} placeholder={inp.placeholder}
-              onChange={e => setValues(v => ({ ...v, [inp.key]: e.target.value }))}
-              style={{ width: "100%", background: t.bgInput, border: `1px solid ${t.borderInput}`, borderRadius: 8, padding: "11px 13px", color: t.textMid, fontSize: 12, lineHeight: 1.7, fontFamily: "monospace", resize: "vertical" }} />
-          </div>
-        );
-      })}
-
-      {error && <div style={{ padding: "8px 12px", borderRadius: 6, background: "rgba(244,63,94,0.06)", border: "1px solid rgba(244,63,94,0.2)", color: "#F87171", fontSize: 11, fontFamily: "monospace", marginBottom: 12 }}>⚠ {error}</div>}
-
-      <button onClick={run} disabled={loading} style={{
-        width: "100%", padding: "13px", borderRadius: 10, border: "none",
-        background: loading ? t.toggleBg : `linear-gradient(135deg, ${tool.color}, ${tool.color}BB)`,
-        color: loading ? t.textDim : "#fff", fontWeight: 700, fontSize: 13,
-        cursor: loading ? "not-allowed" : "pointer",
-        display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 24,
-        boxShadow: loading ? "none" : `0 6px 22px ${tool.glow}`
-      }}>
-        {loading ? <><Spinner color={tool.color} /><span style={{ color: tool.color }}>Analysing with Claude...</span></> : tool.icon + "  " + tool.buttonLabel}
-      </button>
-
-      {result && (
-        <div ref={resultRef}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <div style={{ width: 5, height: 5, borderRadius: "50%", background: tool.color }} />
-              <span style={{ fontSize: 9, fontFamily: "monospace", color: t.textDim, letterSpacing: "0.15em" }}>OUTPUT</span>
-            </div>
-            <CopyBtn text={result} color={tool.color} t={t} />
-          </div>
-          <div style={{ borderRadius: 12, border: `1px solid ${tool.color}22`, background: t.outputBg, padding: "18px 20px", whiteSpace: "pre-wrap", fontSize: 12, lineHeight: 1.85, color: t.textMid, fontFamily: "monospace" }}>
-            {displayed}{!done && <span style={{ color: tool.color }}>|</span>}
           </div>
 
-          {isSummaryTool && done && (
-            <div style={{ marginTop: 14 }}>
-              <div style={{ fontSize: 9, fontFamily: "monospace", color: t.textFaint, letterSpacing: "0.12em", marginBottom: 8 }}>REFINE OUTPUT</div>
-
-              <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-                <input
-                  type="text"
-                  value={customPrompt}
-                  onChange={e => setCustomPrompt(e.target.value)}
-                  onKeyDown={e => { if (e.key === "Enter" && customPrompt.trim() && !refining) refine("Custom", customPrompt.trim()); }}
-                  placeholder="Type any instruction... e.g. 'Tone down the sentiment language'"
-                  style={{ flex: 1, background: t.bgInput, border: `1px solid ${t.borderInput}`, borderRadius: 6, padding: "8px 12px", color: t.textMid, fontSize: 11, fontFamily: "monospace", outline: "none" }}
-                />
-                <button
-                  onClick={() => { if (customPrompt.trim()) refine("Custom", customPrompt.trim()); }}
-                  disabled={!customPrompt.trim() || !!refining}
-                  style={{
-                    background: !customPrompt.trim() || refining ? t.toggleBg : tool.color,
-                    color: !customPrompt.trim() || refining ? t.textDim : "#fff",
-                    border: "none", borderRadius: 6, padding: "8px 16px", fontSize: 10, fontFamily: "monospace",
-                    cursor: !customPrompt.trim() || refining ? "not-allowed" : "pointer", whiteSpace: "nowrap",
-                    display: "flex", alignItems: "center", gap: 6,
-                  }}>
-                  {refining === "Custom" ? <><Spinner color="#fff" /> Refining...</> : "Refine"}
-                </button>
+          {/* Inputs (rendering logic preserved) */}
+          {tool.inputs.map((inp) => {
+            if ((tool.id === "02" || tool.id === "03") && inp.key === "datasheet") return (
+              <div key={inp.key} style={{ marginBottom: 16 }}>
+                <label style={labelStyle}>{inp.label}</label>
+                <label className="mis-drop" style={{
+                  display: "flex", alignItems: "center", gap: 12, background: t.surfaceInput,
+                  border: `1px dashed ${t.borderStrong}`, borderRadius: 12, padding: "14px 16px",
+                  cursor: "pointer", marginBottom: 8,
+                }}>
+                  <span style={{ display: "inline-flex", color: tool.color }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4M7 9l5-5 5 5" /><path d="M20 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2" /></svg>
+                  </span>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: t.text }}>Upload CSV datasheet</div>
+                    <div style={{ fontSize: 11.5, color: t.textDim, marginTop: 2 }}>{values[inp.key] ? "Loaded · " + values[inp.key].length.toLocaleString() + " characters" : "Drop a .csv file or click to browse"}</div>
+                  </div>
+                  <input type="file" accept=".csv,.txt" style={{ display: "none" }} onChange={e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => setValues(v => ({ ...v, [inp.key]: ev.target.result })); r.readAsText(f); }} />
+                </label>
+                <textarea className="mis-input" rows={inp.rows} value={values[inp.key] || ""} placeholder={inp.placeholder + "\n\n(Or paste data here instead of uploading)"}
+                  onChange={e => setValues(v => ({ ...v, [inp.key]: e.target.value }))} style={inputStyle} />
               </div>
+            );
 
-              <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-                {TENSE_ACTIONS.map(makeRefineBtn)}
+            if (tool.id === "03" && inp.key === "ppt") return (
+              <div key={inp.key} style={{ marginBottom: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>{inp.label}</label>
+                  <label className="mis-chip" style={{ display: "inline-flex", alignItems: "center", gap: 7, background: tool.color + "16", border: `1px solid ${tool.color}55`, borderRadius: 999, padding: "6px 13px", cursor: "pointer", fontSize: 11.5, color: tool.color, fontFamily: "var(--mono)" }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4M7 9l5-5 5 5" /></svg>
+                    Upload deck / file
+                    <input type="file" accept=".ppt,.pptx,.txt,.csv,.md" style={{ display: "none" }}
+                      onChange={async e => {
+                        const f = e.target.files[0]; if (!f) return;
+                        if (f.name.endsWith(".pptx") || f.name.endsWith(".ppt")) {
+                          try { const text = await extractPptxText(f); setValues(v => ({ ...v, [inp.key]: text })); }
+                          catch (err) { setError("Could not read PPTX: " + err.message); }
+                        } else {
+                          const r = new FileReader(); r.onload = ev => setValues(v => ({ ...v, [inp.key]: ev.target.result })); r.readAsText(f);
+                        }
+                      }} />
+                  </label>
+                </div>
+                {values[inp.key] && <div style={{ fontSize: 11, color: tool.color, fontFamily: "var(--mono)", marginBottom: 8, padding: "4px 11px", background: tool.color + "14", borderRadius: 999, display: "inline-block" }}>Loaded · {values[inp.key].length.toLocaleString()} characters</div>}
+                <textarea className="mis-input" rows={inp.rows} value={values[inp.key] || ""} placeholder={inp.placeholder}
+                  onChange={e => setValues(v => ({ ...v, [inp.key]: e.target.value }))} style={inputStyle} />
               </div>
+            );
 
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {REFINE_PRESETS.map(makeRefineBtn)}
+            if (tool.id === "04" && inp.key === "articles") return (
+              <div key={inp.key} style={{ marginBottom: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>{inp.label}</label>
+                  <label className="mis-chip" style={{ display: "inline-flex", alignItems: "center", gap: 7, background: tool.color + "16", border: `1px solid ${tool.color}55`, borderRadius: 999, padding: "6px 13px", cursor: "pointer", fontSize: 11.5, color: tool.color, fontFamily: "var(--mono)" }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4M7 9l5-5 5 5" /></svg>
+                    Upload CSV
+                    <input type="file" accept=".csv,.txt" style={{ display: "none" }} onChange={e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => setValues(v => ({ ...v, [inp.key]: ev.target.result })); r.readAsText(f); }} />
+                  </label>
+                </div>
+                <textarea className="mis-input" rows={inp.rows} value={values[inp.key] || ""} placeholder={inp.placeholder}
+                  onChange={e => setValues(v => ({ ...v, [inp.key]: e.target.value }))} style={inputStyle} />
               </div>
+            );
+
+            return (
+              <div key={inp.key} style={{ marginBottom: 16 }}>
+                <label style={labelStyle}>{inp.label}</label>
+                <textarea className="mis-input" rows={inp.rows} value={values[inp.key] || ""} placeholder={inp.placeholder}
+                  onChange={e => setValues(v => ({ ...v, [inp.key]: e.target.value }))} style={inputStyle} />
+              </div>
+            );
+          })}
+
+          {error && (
+            <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "10px 14px", borderRadius: 10, background: t.errBg, border: `1px solid ${t.errBorder}`, color: t.errText, fontSize: 12.5, marginBottom: 16 }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16.5v.01" /></svg>
+              {error}
             </div>
           )}
+
+          <button onClick={run} disabled={loading} className="mis-cta"
+            style={{
+              "--glow": tool.glow, width: "100%", padding: "14px", borderRadius: 13, border: "none",
+              background: loading ? (t.dark ? "rgba(255,255,255,0.05)" : "rgba(15,23,42,0.05)") : `linear-gradient(135deg, ${tool.color}, ${tool.color}CC)`,
+              color: loading ? t.textDim : "#fff", fontWeight: 600, fontSize: 14, letterSpacing: "0.01em",
+              cursor: loading ? "not-allowed" : "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+              boxShadow: loading ? "none" : `0 10px 30px -12px ${tool.glow}`,
+            }}>
+            {loading
+              ? <><Spinner color={tool.color} /><span style={{ color: tool.color }}>Analysing with Claude…</span></>
+              : <><ToolIcon id={tool.id} size={17} />{tool.buttonLabel}</>}
+          </button>
         </div>
-      )}
+
+        {/* Output */}
+        {result && (
+          <div ref={resultRef} style={{ borderTop: `1px solid ${t.border}`, background: t.surfaceAlt, padding: "20px 22px 24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: tool.color }} />
+                <span style={{ fontSize: 10, fontFamily: "var(--mono)", color: t.textDim, letterSpacing: "0.18em" }}>OUTPUT</span>
+              </div>
+              <CopyBtn text={result} color={tool.color} t={t} />
+            </div>
+            <div style={{ borderRadius: 14, border: `1px solid ${t.border}`, background: t.surface, padding: "18px 20px", whiteSpace: "pre-wrap", fontSize: 12.5, lineHeight: 1.9, color: t.textMid, fontFamily: "var(--mono)" }}>
+              {displayed}{!done && <span style={{ color: tool.color }}>▍</span>}
+            </div>
+
+            {isSummaryTool && done && (
+              <div style={{ marginTop: 18 }}>
+                <div style={{ fontSize: 10, fontFamily: "var(--mono)", color: t.textFaint, letterSpacing: "0.16em", marginBottom: 11 }}>REFINE OUTPUT</div>
+                <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                  <input type="text" className="mis-input" value={customPrompt}
+                    onChange={e => setCustomPrompt(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter" && customPrompt.trim() && !refining) refine("Custom", customPrompt.trim()); }}
+                    placeholder="Type any instruction… e.g. 'Tone down the sentiment language'"
+                    style={{ flex: 1, background: t.surfaceInput, border: `1px solid ${t.border}`, borderRadius: 10, padding: "10px 14px", color: t.text, fontSize: 12.5, fontFamily: "var(--mono)", outline: "none" }} />
+                  <button onClick={() => { if (customPrompt.trim()) refine("Custom", customPrompt.trim()); }}
+                    disabled={!customPrompt.trim() || !!refining} className="mis-cta"
+                    style={{
+                      "--glow": tool.glow,
+                      background: !customPrompt.trim() || refining ? (t.dark ? "rgba(255,255,255,0.05)" : "rgba(15,23,42,0.05)") : `linear-gradient(135deg, ${tool.color}, ${tool.color}CC)`,
+                      color: !customPrompt.trim() || refining ? t.textDim : "#fff",
+                      border: "none", borderRadius: 10, padding: "10px 18px", fontSize: 12, fontFamily: "var(--mono)",
+                      cursor: !customPrompt.trim() || refining ? "not-allowed" : "pointer", whiteSpace: "nowrap",
+                      display: "flex", alignItems: "center", gap: 7,
+                    }}>
+                    {refining === "Custom" ? <><Spinner color="#fff" size={12} /> Refining…</> : "Refine"}
+                  </button>
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+                  {TENSE_ACTIONS.map(makeRefineBtn)}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {REFINE_PRESETS.map(makeRefineBtn)}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -398,53 +459,109 @@ export default function App() {
   const t = getTheme(dark);
 
   return (
-    <div style={{ background: t.bg, minHeight: "100vh", color: t.text, fontFamily: "'Syne', sans-serif", transition: "background 0.3s, color 0.3s" }}>
+    <div style={{ background: t.bg, minHeight: "100vh", color: t.text, fontFamily: "var(--sans)", transition: "background 0.3s, color 0.3s", position: "relative" }}>
       <Head>
         <title>Media Intelligence Suite</title>
-        <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
       </Head>
       <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        :root {
+          --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          --serif: 'Newsreader', Georgia, serif;
+          --mono: 'JetBrains Mono', ui-monospace, monospace;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        textarea, input { outline: none; transition: border-color 0.2s; }
-        textarea:focus { border-color: rgba(128,128,128,0.35) !important; }
-        input:focus { border-color: rgba(128,128,128,0.35) !important; }
-        input::placeholder, textarea::placeholder { opacity: 0.4; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.2); border-radius: 3px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes misRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes misShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        @keyframes misPulseKf { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .mis-rise { animation: misRise 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+        .mis-signal { height: 2px; width: 100%; background: linear-gradient(90deg, transparent, var(--accent), transparent); background-size: 200% 100%; animation: misShimmer 3.4s linear infinite; }
+        .mis-pulse { animation: misPulseKf 1.8s ease-in-out infinite; }
+
+        .mis-card { transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease; }
+        .mis-card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 16px 42px -22px var(--accent); }
+        .mis-card:hover .mis-arrow { transform: translateX(4px); opacity: 1; }
+        .mis-arrow { opacity: .55; transition: transform .18s ease, opacity .18s ease; }
+
+        .mis-cta { transition: transform .16s ease, filter .16s ease, box-shadow .16s ease; }
+        .mis-cta:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.07); box-shadow: 0 16px 38px -12px var(--glow) !important; }
+        .mis-cta:not(:disabled):active { transform: translateY(0); }
+
+        .mis-chip { transition: border-color .15s ease, color .15s ease, background .15s ease, transform .15s ease; }
+        .mis-chip:not(:disabled):hover { transform: translateY(-1px); }
+
+        .mis-drop { transition: border-color .18s ease, background .18s ease; }
+        .mis-drop:hover { border-color: var(--accent); }
+
+        .mis-input { transition: border-color .16s ease; }
+        .mis-input:focus { border-color: var(--accent) !important; }
+
+        .mis-toggle { transition: background .2s ease, border-color .2s ease; }
+        .mis-toggle:hover { border-color: var(--accent, rgba(139,92,246,0.5)); }
+
+        button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px solid var(--accent, #8B5CF6); outline-offset: 2px; }
+        textarea::placeholder, input::placeholder { color: currentColor; opacity: .38; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.28); border-radius: 4px; }
+
+        @media (prefers-reduced-motion: reduce) {
+          .mis-rise, .mis-signal, .mis-pulse { animation: none !important; }
+          .mis-signal { background: var(--accent); opacity: .55; }
+          .mis-card:hover { transform: none; }
+        }
       `}</style>
 
-      {/* ── NAV ── */}
-      <div style={{ position: "sticky", top: 0, zIndex: 50, background: t.bgNav, backdropFilter: "blur(12px)", borderBottom: `1px solid ${t.border}`, padding: "0 20px" }}>
-        <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", alignItems: "center", gap: 10, height: 52 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 7, background: "linear-gradient(135deg, #8B5CF6, #6366F1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "#fff", flexShrink: 0 }}>M</div>
-          <span style={{ fontSize: 11, fontWeight: 600, color: t.textDim, whiteSpace: "nowrap" }}>Media Intelligence Suite</span>
+      {/* Ambient glows */}
+      <div aria-hidden="true" style={{ position: "fixed", inset: 0, pointerEvents: "none", background: `radial-gradient(70% 45% at 15% -5%, ${t.glowA}, transparent 60%), radial-gradient(60% 40% at 100% 0%, ${t.glowB}, transparent 55%)` }} />
+
+      {/* NAV */}
+      <div style={{ position: "sticky", top: 0, zIndex: 50, background: t.navBg, backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderBottom: `1px solid ${t.border}` }}>
+        <div style={{ maxWidth: 940, margin: "0 auto", display: "flex", alignItems: "center", gap: 12, height: 58, padding: "0 22px" }}>
+          <div style={{ width: 30, height: 30, borderRadius: 9, background: "linear-gradient(140deg, #8B5CF6, #6366F1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 6px 16px -8px #6366F1" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19V7M9 19V4M14 19v-8M19 19v-5" /></svg>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: t.text }}>Media Intelligence Suite</span>
+            <span style={{ fontSize: 10.5, color: t.textDim, fontFamily: "var(--mono)", letterSpacing: "0.04em" }}>Analyst workbench</span>
+          </div>
           <div style={{ flex: 1 }} />
-          <button onClick={() => setDark(d => !d)} title={dark ? "Light mode" : "Dark mode"}
-            style={{ display: "flex", alignItems: "center", gap: 6, background: t.toggleBg, border: `1px solid ${t.border}`, borderRadius: 20, padding: "5px 12px", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
-            <span style={{ fontSize: 13, lineHeight: 1 }}>{dark ? "☀️" : "🌙"}</span>
-            <span style={{ fontSize: 9, color: t.textDim, fontFamily: "monospace", letterSpacing: "0.06em" }}>{dark ? "Light" : "Dark"}</span>
+          <button onClick={() => setDark(d => !d)} className="mis-toggle" aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+            style={{ display: "flex", alignItems: "center", gap: 8, background: t.surface, border: `1px solid ${t.border}`, borderRadius: 999, padding: "7px 13px", cursor: "pointer", color: t.textMid, flexShrink: 0 }}>
+            {dark
+              ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+              : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>}
+            <span style={{ fontSize: 11, fontFamily: "var(--mono)" }}>{dark ? "Light" : "Dark"}</span>
           </button>
         </div>
       </div>
 
-      {/* ── MAIN ── */}
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "36px 20px 64px", animation: "slideUp 0.3s ease" }}>
-        <div style={{ marginBottom: 30 }}>
-          <div style={{ fontSize: 9, fontFamily: "monospace", color: t.textDim, letterSpacing: "0.15em", marginBottom: 10, textTransform: "uppercase" }}>4 Specialist Tools</div>
-          <h1 style={{ fontSize: "clamp(26px, 4.5vw, 38px)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: 10 }}>
-            <span style={{ color: t.heroTitle }}>Media Intelligence</span><br />
-            <span style={{ background: "linear-gradient(90deg, #8B5CF6, #6366F1, #10B981)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>at your fingertips</span>
+      {/* MAIN */}
+      <div style={{ position: "relative", maxWidth: 940, margin: "0 auto", padding: "56px 22px 72px" }}>
+        <div className="mis-rise" style={{ marginBottom: 42 }}>
+          <div style={{ fontSize: 11, fontFamily: "var(--mono)", color: t.heroEyebrow, letterSpacing: "0.24em", marginBottom: 18, textTransform: "uppercase" }}>
+            Media intelligence · Four instruments
+          </div>
+          <h1 style={{ fontFamily: "var(--serif)", fontWeight: 500, lineHeight: 1.04, letterSpacing: "-0.015em", fontSize: "clamp(38px, 6.5vw, 62px)", color: t.text, marginBottom: 20 }}>
+            Read the coverage.<br />
+            Write the <em style={{ fontStyle: "italic", color: "#8B5CF6" }}>story</em>.
           </h1>
-          <p style={{ fontSize: 13, color: t.textDim, lineHeight: 1.65, maxWidth: 460 }}>Generate summaries, check quality, validate data, and extract insights from your media coverage.</p>
+          <p style={{ fontSize: 15, color: t.textMid, lineHeight: 1.65, maxWidth: 540 }}>
+            Draft executive summaries, quality-check analyst reports, validate decks against source data, and surface the themes that move a story — all in one workspace.
+          </p>
         </div>
 
-        <ToolkitSection t={t} />
+        <div className="mis-rise" style={{ animationDelay: "0.06s" }}>
+          <ToolkitSection t={t} />
+        </div>
       </div>
 
-      <div style={{ textAlign: "center", padding: "20px", fontSize: 9, color: t.textFoot, fontFamily: "monospace" }}>
-        Media Intelligence Suite — Powered by Claude
+      <div style={{ position: "relative", textAlign: "center", padding: "24px", fontSize: 10.5, color: t.textFaint, fontFamily: "var(--mono)", letterSpacing: "0.04em", borderTop: `1px solid ${t.border}` }}>
+        Media Intelligence Suite · Powered by Claude
       </div>
     </div>
   );
